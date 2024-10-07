@@ -1,0 +1,10 @@
+tqdm
+label-studio
+numpy
+ultralytics
+Pillow
+pygetwindow
+pyautogui
+opencv-python
+python-dotenv
+tk
