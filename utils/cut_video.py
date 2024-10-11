@@ -52,16 +52,7 @@ def convert_video_to_images():
     # 获取视频的帧率和总帧数
     fps = cap.get(cv2.CAP_PROP_FPS)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-
-    # fps = video.get(cv2.CAP_PROP_FPS)
-    # frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    # duration = frame_count / fps
-
-
-    # 计算每0.618秒的帧数
-    interval = int(fps * 0.618)  # 假设帧率是30FPS，则interval为30*0.618
-
+    interval = int(fps/3)
     frame_count = 0
     save_count = 0  # 用于记录保存的图片数量
     while True:
@@ -120,7 +111,7 @@ def convert_video_to_mp4():
     video_clip.write_videofile(output_path, codec='libx264', audio_codec='aac', fps=video_clip.fps,
                                # logger=update_progress
                                )
-    print("Video conversion completed.")
+    print(f"{base_name_without_ext} Video conversion completed.")
     status_label.config(text="转换完成")
     video_clip.close()
     bar.pack_forget()  # 隐藏进度条

@@ -66,7 +66,7 @@ class Dungeon:
     def look(self):
         def __do_look(args):
             while self.running and (not self.stopped):
-                time.sleep(0.8)
+                time.sleep(1)
                 self.look_and_update_environment()
 
         t = threading.Thread(target=__do_look, args=(self,))
@@ -74,7 +74,7 @@ class Dungeon:
 
     def look_and_update_environment(self):
         result = DNF_DETECTOR.vision(self.hero.adb.screenshot())
-        pprint(result)
+        # pprint(result)
         if result:
             result.pop('Master_Fake', 'no fake master.')
             self.update_environment(result)
@@ -94,32 +94,32 @@ class Dungeon:
             self.hero.pos = hero_pos[0]
         else:
             self.hero.pos = (0, 0)
-        distance =self.calculate_distance(old_pos, self.hero.pos)
+        distance = self.calculate_distance(old_pos, self.hero.pos)
         print('old_pos: ', old_pos, 'new_pos: ', self.hero.pos, 'distance: ', distance)
         self.hero.leave = False if distance < 25 else True
 
     def update_environment(self, data):
-        hero_pos = data.get('Hero')
-        role_pos = data.get(self.hero.name, [])
-        self.get_hero_position(hero_pos, role_pos)
-        # self.hero.position = hero_pos[0]
-        # self.room.name = data.get('Room')
-        self.room.enemies = data.get('Monster')
-        self.room.items = data.get('Item')
-        self.room.route = self.sort_route(data.get('Route'))
+        if getattr(self, 'room'):
+            hero_pos = data.get('Hero')
+            role_pos = data.get(self.hero.name, [])
+            self.get_hero_position(hero_pos, role_pos)
+            # self.hero.position = hero_pos[0]
+            # self.room.name = data.get('Room')
+            self.room.enemies = self.sort_route(data.get('Monster'))
+            self.room.items = self.sort_route(data.get('Item'))
+            self.room.route = self.sort_route(data.get('Route'))
 
-        self.room.door_lock = data.get('Docr_Lock', [])
-        self.room.lock = True if (data.get('Docr_Lock') and (not data.get('Dore_Open'))) else False
-        self.room.door_open = data.get('Dore_Open', [])
-        self.room.door_next = data.get('Docr_NEXT', [])
-        self.room.doors = data.get('Door', []) + self.room.door_lock + self.room.door_open
-
+            self.room.door_lock = data.get('Docr_Lock', [])
+            self.room.lock = True if (data.get('Docr_Lock') and (not data.get('Dore_Open'))) else False
+            self.room.door_open = data.get('Dore_Open', [])
+            self.room.door_next = data.get('Docr_NEXT', [])
+            self.room.doors = data.get('Door', []) + self.room.door_lock + self.room.door_open
 
     def run(self):
+        self.look()
         for index, room in enumerate(self.rooms):
             self.room = room
-            self.running = True
-            self.look()
+            # self.running = True
             if self.in_room():
                 if room.god_pos and room.god_pos != (0, 0):
                     print('move to the god position')
@@ -132,10 +132,43 @@ class Dungeon:
                 #     self.hero.use_skill('B')
                 # elif index == 2:
                 #     self.hero.use_skill('C')
+                while not self.stopped and self.running:
+                    # pprint('执行自动任务：')
+                    if self.room.enemies:
+                        pprint(f'发现怪物，移动并进行攻击，英雄坐标{self.hero.pos}，怪物坐标{self.room.enemies}')
+                        # print('monster center: ', calculate_centroid(self.room.enemies))
+                        self.hero.move(*self.get_neearst(self.hero.pos, self.room.enemies), factor=0.8)
+                        # self.hero.move(*calculate_centroid(self.room.enemies), factor=0.85)
+                        self.hero.use_factotum_skill()
+                        # time.sleep(0.5)
 
-                self.auto_attck()
-                self.leave()
-                self.running = False  # Stop the update thread when
+                    elif self.room.items:
+                        pprint(f'发现掉落奖励，移动英雄进行拾取，材料坐标:{self.room.items}')
+                        for pos in self.room.items:
+                            self.hero.move(*pos)
+                            # time.sleep(0.5)
+
+                        # 寻找找到路径终点最近的门
+                    elif self.room.route:
+                        pprint('房间任务已完成，准备离开该房间')
+                        # 对路径点进行排序，确保它们按照英雄移动的顺序排列
+                        # end_point = self.room.route[-1]
+                        for pos in self.room.route:
+                            self.hero.move(*pos)
+                            # time.sleep(0.2)
+                        # [self.hero.move(*pos) for pos in self.room.route]
+                    else:
+                        # 如果路线中没有点，选择距离最近的房间移动
+                        # print("Route does not have enough points to form a path.")
+                        end_point = self.hero.pos
+                        nearest_door = self.get_neearst(end_point, self.room.doors)
+                        if nearest_door:
+                            print(f'移动到门口{nearest_door}')
+                            self.hero.move(*nearest_door)
+                            # self.running = False
+                # self.auto_attck()
+                # self.leave()
+                # self.running = False  # Stop the update thread when
 
     def auto_attck(self):
         while (self.room.lock or (not self.room.is_cleared())) and (not self.stopped):

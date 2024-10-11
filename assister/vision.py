@@ -49,7 +49,7 @@ class ObjectDetector:
 
     def __init__(self, model_path):
         self.model = self.load_model(model_path)
-        self.score = 0.61  #60%置信度
+        self.score = 0.30  #60%置信度
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(ObjectDetector, "_instance"):
@@ -72,12 +72,16 @@ class ObjectDetector:
     def predict(self, image):
         # 使用模型进行预测
         preprocessed_image = self.preprocess(image)
+        # timestamp = int(time.time())
         # 是一个包含多个检测结果的列表
         return self.model.predict(
             source=preprocessed_image,
             # imgsz=(320, 640),  # 设置输入图像的尺寸
             # show=True,  # 显示结果
-            # # save=True,  # 保存结果
+            # save=True,  # 保存结果
+            # save_frames=True,
+            # save_dir='.',
+            # name=f'result_{timestamp}.jpg'
         )
 
     def postprocess(self, predictions: List[Results]) -> Dict:
@@ -98,7 +102,7 @@ class ObjectDetector:
             # cv2.COLOR_BGR2RGB) 绘制每个检测到的对象的边界框和标签
             for i, box in enumerate(prediction_img.boxes):
                 x1, y1, x2, y2 = box.xyxy[0]  # 获取边界框坐标
-                x, y = round((x1 + x2).item(), 2) / 2, round(y2.item(), 2)
+                x, y = round((x1 + x2).item(), 2) / 2, round((y1 * 1 / 5 + y2 * 4 / 5).item(), 2)
                 score = round(box.conf.item(), 2)  # 置信度
                 if score > self.score:
                     cls = int(box.cls.item())  # 类别索引

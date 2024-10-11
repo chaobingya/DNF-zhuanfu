@@ -13,6 +13,7 @@ class Automation:
         # 初始化函数，设置窗口标题和模型
         self.extra_height = 30
         self.window = self.get_window()
+        self.window_is_top = os.environ.get('ADB_WINDOW_TOP')
         self.huagan, self.huagan_move_max = self.get_huagan_location()
 
     def get_window(self):
@@ -32,7 +33,8 @@ class Automation:
     def screenshot(self):
         if self.window.isMaximized or self.window.isMinimized:
             self.window.restore()
-        if not self.window.isActive:
+        if not (self.window.isActive or self.window_is_top):
+            # 该方法会让屏幕一直在最前面。
             pyautogui.press('altleft')  # 第二次acitive会gw.PyGetWindowException异常，添加此方法
             self.window.activate()
             time.sleep(0.07)
@@ -184,7 +186,7 @@ class Automation:
         distance = math.sqrt(delta_x ** 2 + delta_y ** 2)
         window_distance = math.sqrt(self.window.width ** 2 + self.window.height ** 2)
         # 计算持续时间，这里应该除以speed，没有细扣。
-        duration = max(0.25, round(distance / window_distance * 2.35, 2))
+        duration = max(0.10, round(distance / window_distance * 2.35, 2))
         pyautogui.moveTo(huagan_X, huagan_Y)
         pyautogui.dragTo(move_x, move_y, duration=duration)
 

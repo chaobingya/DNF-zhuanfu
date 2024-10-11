@@ -31,6 +31,10 @@ def main():
         Room(name=dungeon.name + "_" + "4", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
         Room(name=dungeon.name + "_" + "5", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
         Room(name=dungeon.name + "_" + "6", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
+        # Room(name=dungeon.name + "_" + "7", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
+        # Room(name=dungeon.name + "_" + "8", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
+        # Room(name=dungeon.name + "_" + "9", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
+        # Room(name=dungeon.name + "_" + "10", god_pos=(0, 0), door=[(0, 0), (0, 0)]),
     ]
 
     dungeon.run()

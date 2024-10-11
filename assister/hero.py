@@ -138,20 +138,20 @@ class Hero:
         self.adb = Automation()
         self.leave = False
         self.skills = load_skills_from_dict(SKILLS.get(name), self.adb)  # Dictionary for quick access
-        self.factotum = ['Key_N', 'Key_M', 'Key_J', 'Key_K', 'Key_L', 'Key_U', 'Key_I']
+        self.factotum = [ 'Key_M', 'Key_J', 'Key_K', 'Key_L', 'Key_U', 'Key_I']
 
     def move(self, x, y, factor=1):
         x, y = x * factor, y * factor
         self.adb.move(self.pos, (x, y))
         print(f'hero moved from {self.pos} to {(x, y)}')
-        # self.pos = (x, y)
+        self.pos = (x, y)
 
     def use_skill(self, skill_key):
         skill = self.skills.get(skill_key)
         if skill:
             if skill.is_ready:
                 skill.execute()
-                print('use skill:',skill_key)
+                print('use skill:', skill_key)
             else:
                 print('skill not ready!')
         else:
@@ -167,6 +167,9 @@ class Hero:
         factotums = [self.skills.get(skill_key) for skill_key in self.factotum if self.skills.get(skill_key).is_ready]
         if not factotums:
             factotums = [self.skills.get('Key_H')]  #普攻
+            self.skills.get('Key_H').execute()
+            self.skills.get('Key_H').execute()
+            self.skills.get('Key_H').execute()
         # self.use_skill(random.choice(factotums))
         random.choice(factotums).execute()
 
